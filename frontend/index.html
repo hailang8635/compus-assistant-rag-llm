@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>上海大学 · 校园百事通</title>
+  <meta name="description" content="上海大学校园百事通：本地RAG + ChatGPT风格交互"/>
+  <link rel="stylesheet" href="/assets/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">SHU</div>
+        <div class="brand-meta">
+          <div class="brand-title">校园百事通</div>
+          <div class="brand-sub">本地RAG · 办事指南 · 智能问答</div>
+        </div>
+      </div>
+
+      <div class="side-actions">
+        <a class="btn primary" href="/faq">FAQ（20条）</a>
+        <button class="btn ghost" id="newChatBtn" type="button">新建对话</button>
+      </div>
+
+      <div class="tips">
+        <div class="tips-title">使用提示</div>
+        <div class="tips-body">
+          - 回车发送，Shift+回车换行<br/>
+          - 输入<strong>“人工”</strong>：弹出联系方式<br/>
+          - 若命中 <code>docs/*.md</code>，会自动附带相邻段作为上下文
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="title">上海大学 · 校园百事通</div>
+          <div class="meta">ChatGPT 风格交互（Markdown 渲染）</div>
+        </div>
+        <div class="meta">
+          <span class="pill">API: POST /api/chat</span>
+        </div>
+      </header>
+
+      <section class="chat" id="chat">
+        <div class="chat-inner" id="chatInner"></div>
+      </section>
+
+      <section class="composer">
+        <div class="composer-inner">
+          <textarea id="prompt" placeholder="请输入问题，例如：VPN怎么用？研究生培养计划怎么查看？"></textarea>
+          <button class="send" id="sendBtn" type="button">发送</button>
+        </div>
+        <div class="footnote">
+          本系统默认调用本地 Ollama（可用环境变量切换 DeepSeek）。回答仅供参考，具体以学校官方通知/规章为准。
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <div class="modal-title" id="modalTitle">提示</div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="btn ghost" type="button" id="modalClose">关闭</button>
+        <button class="btn primary" type="button" id="modalOk">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
+
+

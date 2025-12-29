@@ -1,0 +1,94 @@
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+
+def _split_to_paragraphs(text: str) -> list[str]:
+    # Split by blank lines (one or more)
+    raw = re.split(r"\n\s*\n+", text.replace("\r\n", "\n"))
+    out: list[str] = []
+    for p in raw:
+        s = (p or "").strip()
+        if not s:
+            continue
+        # skip pure separators
+        if re.fullmatch(r"[#\-=*_ \t]+", s):
+            continue
+        out.append(s)
+    return out
+
+
+def _extract_keywords(msg: str) -> list[str]:
+    # Chinese 2-4 chars + alnum words
+    zh = re.findall(r"[\u4e00-\u9fff]{2,4}", msg)
+    en = re.findall(r"[A-Za-z0-9]{2,}", msg.lower())
+
+    kws: list[str] = []
+    seen = set()
+    for k in zh + en:
+        if k in seen:
+            continue
+        seen.add(k)
+        kws.append(k)
+
+    stop = {"什么", "怎么", "如何", "可以", "是否", "老师", "同学", "上海", "大学", "校园"}
+    kws = [k for k in kws if k not in stop]
+    kws.sort(key=len, reverse=True)
+    return kws[:12]
+
+
+def _score_paragraph(p: str, keywords: list[str]) -> int:
+    return sum(1 for k in keywords if k and (k in p))
+
+
+@dataclass
+class GuidanceMatchService:
+    guidance_path: Path
+    min_score: int = 2
+
+    _paragraphs: list[str] | None = None
+    _mtime: float | None = None
+
+    def _reload_if_needed(self) -> None:
+        if not self.guidance_path.exists():
+            self._paragraphs = []
+            self._mtime = None
+            return
+        mtime = self.guidance_path.stat().st_mtime
+        if self._paragraphs is not None and self._mtime == mtime:
+            return
+        text = self.guidance_path.read_text(encoding="utf-8", errors="ignore")
+        self._paragraphs = _split_to_paragraphs(text)
+        self._mtime = mtime
+
+    def match_with_neighbors(self, user_message: str) -> str | None:
+        msg = (user_message or "").strip()
+        if not msg:
+            return None
+        self._reload_if_needed()
+        paragraphs = self._paragraphs or []
+        if not paragraphs:
+            return None
+
+        keywords = _extract_keywords(msg)
+        if not keywords:
+            return None
+
+        best_idx = -1
+        best_score = 0
+        for i, p in enumerate(paragraphs):
+            score = _score_paragraph(p, keywords)
+            if score > best_score:
+                best_score = score
+                best_idx = i
+
+        if best_idx < 0 or best_score < self.min_score:
+            return None
+
+        start = max(0, best_idx - 1)
+        end = min(len(paragraphs) - 1, best_idx + 1)
+        return "\n\n".join(paragraphs[start : end + 1]).strip()
+
+

@@ -1,0 +1,53 @@
+# curl http://localhost:11434/api/chat -H "Content-Type: application/json" -d '{
+#  "model": "qwen2.5:7b",
+#  "messages": [
+#    {
+#      "role": "user",
+#      "content": "请用Python写一个计算斐波那契数列的函数"
+#    }
+#  ],
+#  "stream": false
+#}'
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "qwen2.5:7b",
+  "messages": [
+    {
+      "role": "user",
+      "contentx": "请用Python写一个计算斐波那契数列的函数",
+      "content": "tell me a joke",
+      "a": "b"
+    }
+  ],
+  "stream": false
+}
+
+<> 2025-12-26T115945.200.json
+<> 2025-12-26T113529.200.json
+<> 2025-12-26T112851.200.json
+
+###
+
+# curl http://localhost:8000/api/rag/status
+GET http://localhost:8000/api/rag/status
+
+<> 2025-12-26T170645.200.json
+<> 2025-12-26T113259.200.json
+
+###
+###
+
+# curl http://localhost:8000/api/rag/status
+POST http://localhost:8000/api/rag/reindex
+
+<> 2025-12-26T170648.405.json
+<> 2025-12-26T170539.404.json
+<> 2025-12-26T113259.200.json
+
+###
+
+
+
+
